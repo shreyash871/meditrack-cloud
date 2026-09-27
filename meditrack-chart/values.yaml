@@ -29,3 +29,6 @@ autoscaling:
   minReplicas: 2
   maxReplicas: 8
   targetCPUUtilizationPercentage: 50
+
+monitoring:
+  enabled: true

@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.core.database import (
     close_mongo_connection,
@@ -21,9 +22,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="MediTrack Cloud",
     description="Hospital appointment booking API",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 app.include_router(health.router)
 app.include_router(bookings.router)
@@ -31,4 +34,4 @@ app.include_router(bookings.router)
 
 @app.get("/")
 async def root():
-    return {"service": "meditrack-cloud", "version": "0.1.0"}
+    return {"service": "meditrack-cloud", "version": "0.2.0"}
