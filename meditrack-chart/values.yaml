@@ -1,0 +1,25 @@
+replicaCount: 2
+
+image:
+  repository: meditrack-api
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+
+service:
+  port: 80
+  targetPort: 8000
+
+mongo:
+  enabled: true
+  image: mongo:7
+  url: "mongodb://mongo:27017"
+
+config:
+  databaseName: meditrack
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
