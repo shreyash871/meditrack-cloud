@@ -38,20 +38,29 @@ jobs:
           MONGODB_URL: mongodb://localhost:27017
         run: pytest -v
 
-  build:
+  build-and-push:
     needs: test
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build image
-        run: docker build -t meditrack-api:${{ github.sha }} .
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Verify image runs
-        run: |
-          docker run -d --name smoke -p 8000:8000 \
-            -e MONGODB_URL=mongodb://localhost:27017 \
-            meditrack-api:${{ github.sha }} || true
-          sleep 5
-          docker logs smoke
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
