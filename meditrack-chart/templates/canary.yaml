@@ -1,0 +1,38 @@
+{{- if .Values.canary.enabled }}
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: {{ .Release.Name }}-api
+spec:
+  provider: kubernetes
+
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-api
+
+  service:
+    port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.targetPort }}
+
+  analysis:
+    interval: 30s
+    threshold: 2
+    iterations: 4
+
+    metrics:
+      - name: request-success-rate
+        templateRef:
+          name: {{ .Release.Name }}-success-rate
+        thresholdRange:
+          min: 95
+        interval: 1m
+
+    webhooks:
+      - name: load-test
+        type: rollout
+        url: http://flagger-loadtester.flagger-system/
+        timeout: 5s
+        metadata:
+          cmd: "hey -z 25s -q 5 -c 2 http://{{ .Release.Name }}-api-canary.default:{{ .Values.service.port }}/bookings"
+{{- end }}

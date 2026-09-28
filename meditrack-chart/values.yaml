@@ -32,3 +32,6 @@ autoscaling:
 
 monitoring:
   enabled: true
+
+canary:
+  enabled: true

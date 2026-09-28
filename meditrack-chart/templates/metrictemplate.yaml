@@ -1,0 +1,16 @@
+{{- if .Values.canary.enabled }}
+apiVersion: flagger.app/v1beta1
+kind: MetricTemplate
+metadata:
+  name: {{ .Release.Name }}-success-rate
+spec:
+  provider:
+    type: prometheus
+    address: http://monitoring-kube-prometheus-prometheus.monitoring:9090
+  query: |
+    100 - 100 * (
+      sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}",pod=~"{{ .Release.Name }}-api-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)*",status=~"5.."}[1m]))
+      /
+      sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}",pod=~"{{ .Release.Name }}-api-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)*"}[1m]))
+    )
+{{- end }}
